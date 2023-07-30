@@ -15,6 +15,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.WindowInsets;
 import android.view.inputmethod.InputMethodManager;
 
 // import additionally required classes for calculating screen height
@@ -91,17 +92,20 @@ public class CDVIonicKeyboard extends CordovaPlugin {
                             int rootViewHeight = rootView.getRootView().getHeight();
                             int resultBottom = r.bottom;
 
-                            // calculate screen height differently for android versions >= 21: Lollipop 5.x, Marshmallow 6.x
-                            //http://stackoverflow.com/a/29257533/3642890 beware of nexus 5
                             int screenHeight;
 
-                            if (Build.VERSION.SDK_INT >= 21) {
+                            if (Build.VERSION.SDK_INT >= 23) {
+                                WindowInsets windowInsets = rootView.getRootWindowInsets();
+                                int stableInsetBottom = windowInsets.getStableInsetBottom();
+                                screenHeight = rootViewHeight;
+                                resultBottom = resultBottom + stableInsetBottom;
+                            } else {
+                                // calculate screen height differently for android versions <23: Lollipop 5.x, Marshmallow 6.x
+                                //http://stackoverflow.com/a/29257533/3642890 beware of nexus 5
                                 Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
                                 Point size = new Point();
                                 display.getSize(size);
                                 screenHeight = size.y;
-                            } else {
-                                screenHeight = rootViewHeight;
                             }
 
                             int heightDiff = screenHeight - resultBottom;
